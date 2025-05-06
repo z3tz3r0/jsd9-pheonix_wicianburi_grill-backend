@@ -7,8 +7,9 @@ export const registerUser = async (req, res) => {
   try {
     const existingUser = await User.findOne({ email });
     if (existingUser) {
-      return res.status(400).json({ error: "บัญชีนี้มีผู้ใช้งานแล้ว" }); // เพิ่มข้อความนี้เมื่ออีเมลซ้ำ
+      return res.status(400).json({ error: "บัญชีนี้มีผู้ใช้งานแล้ว" });
     }
+
     const hashedPassword = await bcrypt.hash(password, 10);
     const newUser = new User({
       email,
@@ -17,6 +18,7 @@ export const registerUser = async (req, res) => {
       password: hashedPassword,
     });
     await newUser.save();
+
     res.status(201).json({ message: "สร้างผู้ใช้งานใหม่สำเร็จ" });
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -36,17 +38,39 @@ export const loginUser = async (req, res) => {
       expiresIn: "1h",
     });
 
-    res.json({
-      userId: user._id,
-      firstname: user.firstname,
-      lastname: user.lastname,
-      token,
-    });
+    res
+      .cookie("accessToken", token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "Strict",
+        maxAge: 60 * 60 * 1000,
+      })
+      .status(200)
+      .json({
+        message: "เข้าสู่ระบบสำเร็จ",
+        user: {
+          _id: user._id,
+          firstname: user.firstname,
+          lastname: user.lastname,
+          email: user.email,
+        },
+      });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 };
 
+export const logoutUser = (req, res) => {
+  res.clearCookie("accessToken", {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "Strict",
+  });
+
+  res.status(200).json({ message: "ออกจากระบบแล้ว" });
+};
+
+// Get All Users
 export const getUsers = async (req, res) => {
   try {
     const users = await User.find();

@@ -2,10 +2,14 @@ import jwt from "jsonwebtoken";
 
 export const authUser = async (req, res, next) => {
   const token =
-    req.cookies?.accessToken || req.headers.authorization?.split(" ")[1];
+    req.cookies?.accessToken;
 
   if (!token) {
-    return res.json({ success: false, message: "Access denied. No token." });
+    return res.status(401).json({
+      error: true,
+      code: "NO_TOKEN",
+      message: "Access denied. No token provided.",
+    });
   }
 
   try {
@@ -14,11 +18,11 @@ export const authUser = async (req, res, next) => {
     next();
   } catch (err) {
     const isExpired = err.name === "TokenExpiredError";
-    res.status(401).json({
+    return res.status(401).json({
       error: true,
       code: isExpired ? "TOKEN_EXPIRED" : "INVALID_TOKEN",
       message: isExpired
-        ? "Token has expired, please log in again."
+        ? "Token has expired. Please log in again."
         : "Invalid token.",
     });
   }

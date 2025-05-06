@@ -1,0 +1,50 @@
+@adminToken = 
+
+### Register a new user
+POST http://localhost:5000/api/auth/register
+Content-Type: application/json
+
+{
+    "email": "pakkadd@gmail.com",
+    "firstname": "test",
+    "lastname": "test",
+    "password": "123"
+}
+
+### Login with the registered User
+POST http://localhost:5000/api/auth/login
+Content-Type: application/json
+
+{
+    "email": "chirayuth40489@gmail.com",
+    "password": "tg40489"
+}
+
+### Get my user after logged in 
+GET http://localhost:5000/api/auth/users/me
+Authorization: Bearer 
+
+### Get all users for Admin
+GET http://localhost:5000/api/auth/users
+
+### Create dev admin
+POST http://localhost:5000/admin/auth/logout
+Content-Type: application/json
+
+{
+  "email": "admin@example.com",
+  "password": "password123"
+}
+
+### Login dev admin
+POST http://localhost:5000/admin/auth/login
+Content-Type: application/json
+
+{
+  "email": "admin@example.com",
+  "password": "password123"
+}
+
+### logout dev admin
+POST http://localhost:5000/admin/auth/logout
+

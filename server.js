@@ -18,11 +18,11 @@ const __dirname = path.dirname(__filename);
 
 const whitelist = [
   "http://localhost:5173",
-  "https://jsd9-pheonix-wicianburi-grill-backend.onrender.com",
+  "https://jsd9-pheonix-wicianburi-frontend.vercel.app/",
 ];
 const corsOptions = {
   origin: function (origin, callback) {
-    if (whitelist.indexOf(origin) !== -1) {
+    if (!origin || whitelist.indexOf(origin) !== -1) {
       callback(null, true);
     } else {
       callback(new Error("Not allowed by CORS"));

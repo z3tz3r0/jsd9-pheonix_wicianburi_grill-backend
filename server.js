@@ -18,7 +18,6 @@ app.use(
     credentials: true,
   })
 ); 
-app.use(limiter);
 app.use(express.json());
 app.use(cookieParser());
 

@@ -1,11 +1,11 @@
+import cookieParser from "cookie-parser";
+import cors from "cors";
+import dotenv from "dotenv";
 import express from "express";
 import mongoose from "mongoose";
-import dotenv from "dotenv";
-import cors from "cors";
-import userRoutes from "./routes/userRoutes.js";
-import cookieParser from "cookie-parser";
 import errorHandler from "./middlewares/errorHandler.js";
-
+import limiter from "./middlewares/rateLimiter.js";
+import userRoutes from "./routes/userRoutes.js";
 
 dotenv.config();
 
@@ -17,7 +17,8 @@ app.use(
     origin: "http://localhost:5173",
     credentials: true,
   })
-); 
+);
+app.use(limiter);
 
 app.use(express.json());
 app.use(cookieParser());
@@ -32,7 +33,7 @@ app.use("/api/auth", userRoutes);
 // TODO : Kob working on this
 // TODO : required other models to be done to see what schema look like.
 import adminRoutes from "./routes/adminRoutes.js";
-import limiter from "./middlewares/rateLimiter.js";
+
 app.use("/admin", adminRoutes);
 
 const connectDB = async () => {

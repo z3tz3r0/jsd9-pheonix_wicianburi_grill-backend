@@ -16,11 +16,11 @@ const app = express();
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-var whitelist = [
+const whitelist = [
   "http://localhost:5173",
   "https://jsd9-pheonix-wicianburi-grill-backend.onrender.com",
 ];
-var corsOptions = {
+const corsOptions = {
   origin: function (origin, callback) {
     if (whitelist.indexOf(origin) !== -1) {
       callback(null, true);

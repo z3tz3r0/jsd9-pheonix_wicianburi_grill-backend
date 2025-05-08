@@ -6,6 +6,7 @@ import userRoutes from "./routes/userRoutes.js";
 import cookieParser from "cookie-parser";
 import errorHandler from "./middlewares/errorHandler.js";
 
+
 dotenv.config();
 
 const app = express();
@@ -16,7 +17,8 @@ app.use(
     origin: "http://localhost:5173",
     credentials: true,
   })
-); // อย่าลืมมาแก้ cors ตอน deploy
+); 
+
 app.use(express.json());
 app.use(cookieParser());
 
@@ -30,6 +32,7 @@ app.use("/api/auth", userRoutes);
 // TODO : Kob working on this
 // TODO : required other models to be done to see what schema look like.
 import adminRoutes from "./routes/adminRoutes.js";
+import limiter from "./middlewares/rateLimiter.js";
 app.use("/admin", adminRoutes);
 
 const connectDB = async () => {

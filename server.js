@@ -5,7 +5,7 @@ import cors from "cors";
 import userRoutes from "./routes/userRoutes.js";
 import cookieParser from "cookie-parser";
 import errorHandler from "./middlewares/errorHandler.js";
-import limiter from "./middlewares/rateLimiter.js"
+
 
 dotenv.config();
 

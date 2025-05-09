@@ -3,7 +3,7 @@ import jwt from "jsonwebtoken";
 import User from "../models/User.js";
 
 export const registerUser = async (req, res) => {
-  const { email, firstname, lastname, password } = req.body;
+  const { email, firstName, lastName, password } = req.body;
   try {
     const existingUser = await User.findOne({ email });
     if (existingUser) {
@@ -13,15 +13,15 @@ export const registerUser = async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, 10);
     const newUser = new User({
       email,
-      firstname,
-      lastname,
+      firstName,
+      lastName,
       password: hashedPassword,
     });
     await newUser.save();
 
     res.status(201).json({ message: "สร้างผู้ใช้งานใหม่สำเร็จ" });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: "เกิดข้อผิดพลาดระหว่างสร้างผู้ใช้งานใหม่" });
   }
 };
 
@@ -53,13 +53,13 @@ export const loginUser = async (req, res) => {
         message: "เข้าสู่ระบบสำเร็จ",
         user: {
           _id: user._id,
-          firstname: user.firstname,
-          lastname: user.lastname,
+          firstName: user.firstName,
+          lastName: user.lastName,
           email: user.email,
         },
       });
     } catch (error) {
-      res.status(500).json({ error: error.message });
+      res.status(500).json({ error: "เกิดข้อผิดพลาดระหว่างเข้าสู่ระบบ" });
     }
 };
 

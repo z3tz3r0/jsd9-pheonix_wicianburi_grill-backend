@@ -2,6 +2,7 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import mongoose from "mongoose";
 import Admin from "../models/Admin.js";
+import errMessage from "../utils/errMessage.js";
 
 // Auth
 // adminRoutes.post("/auth/register", createNewAdmin);
@@ -9,16 +10,20 @@ import Admin from "../models/Admin.js";
 export const createNewAdmin = async (req, res) => {
   const { username, email, password } = req.body;
   if (!username || !email || !password) {
-    return res
-      .status(400)
-      .json({ message: "Username, Email, or Password is missing" });
+    // return res
+    //   .status(400)
+    //   .json({ message: "Username, Email, or Password is missing" });
+    return next(errMessage(400, "Username, Email, or Password is missing"));
   }
 
   try {
     const existingUser = await Admin.findOne({ email });
+
     if (existingUser) {
-      return res.status(409).json({ message: "Email already in used" });
+      // return res.status(409).json({ message: "Email already in used" });
+      return next(errMessage(409, "Email already in used"));
     }
+
     const hashPassword = await bcrypt.hash(password, 10);
     const admin = new Admin({ username, email, password: hashPassword });
     await admin.save();
@@ -26,7 +31,8 @@ export const createNewAdmin = async (req, res) => {
       .status(201)
       .json({ message: "SUCCESS: Create new admin", admin });
   } catch (error) {
-    return res.status(500).json({ message: `Server Error: ${error}` });
+    // return res.status(500).json({ message: `Server Error: ${error.message}` });
+    return next(errMessage(500, `Server Error: ${error.message}`));
   }
 };
 

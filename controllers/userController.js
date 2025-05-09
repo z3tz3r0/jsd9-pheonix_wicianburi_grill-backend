@@ -37,12 +37,15 @@ export const loginUser = async (req, res) => {
     const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, {
       expiresIn: "1h",
     });
+    
+    const isProd = process.env.NODE_ENV === "production";
 
     res
       .cookie("accessToken", token, {
         httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "Strict",
+        secure: isProd,
+        sameSite: isProd ? "none" : "lax",
+        path: "/",
         maxAge: 60 * 60 * 1000,
       })
       .status(200)
@@ -55,20 +58,24 @@ export const loginUser = async (req, res) => {
           email: user.email,
         },
       });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
 };
 
 export const logoutUser = (req, res) => {
+  const isProd = process.env.NODE_ENV === "production";
+  console.log("Logged out!")
   res.clearCookie("accessToken", {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "Strict",
+    secure: isProd,
+    sameSite: isProd ? "none" : "lax",
+    path: "/",
   });
 
   res.status(200).json({ message: "ออกจากระบบแล้ว" });
 };
+
 
 // Get All Users
 export const getUsers = async (req, res) => {

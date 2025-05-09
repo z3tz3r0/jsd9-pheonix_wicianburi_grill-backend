@@ -37,7 +37,7 @@ const OrderSchema = new Schema(
             ref: "Product",
             required: true
           },
-          variantLabel: {
+          variantValue: {
             type: String,
             required: true,
           },

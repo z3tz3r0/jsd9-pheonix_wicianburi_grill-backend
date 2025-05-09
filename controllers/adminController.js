@@ -2,6 +2,7 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import mongoose from "mongoose";
 import Admin from "../models/Admin.js";
+import errMessage from "../utils/errMessage.js";
 
 // Auth
 // adminRoutes.post("/auth/register", createNewAdmin);
@@ -9,16 +10,16 @@ import Admin from "../models/Admin.js";
 export const createNewAdmin = async (req, res) => {
   const { username, email, password } = req.body;
   if (!username || !email || !password) {
-    return res
-      .status(400)
-      .json({ message: "Username, Email, or Password is missing" });
+    return next(errMessage(400, "Username, Email, or Password is missing"));
   }
 
   try {
     const existingUser = await Admin.findOne({ email });
+
     if (existingUser) {
-      return res.status(409).json({ message: "Email already in used" });
+      return next(errMessage(409, "Email already in used"));
     }
+
     const hashPassword = await bcrypt.hash(password, 10);
     const admin = new Admin({ username, email, password: hashPassword });
     await admin.save();
@@ -26,24 +27,24 @@ export const createNewAdmin = async (req, res) => {
       .status(201)
       .json({ message: "SUCCESS: Create new admin", admin });
   } catch (error) {
-    return res.status(500).json({ message: `Server Error: ${error}` });
+    return next(errMessage(500, `Server Error: ${error.message}`));
   }
 };
 
 export const loginAdmin = async (req, res) => {
   const { email, password } = req.body;
   if (!email || !password) {
-    return res.status(400).json({ message: "Email or Password is missing" });
+    return next(errMessage(400, "Email or Password is missing"));
   }
 
   try {
     const admin = await Admin.findOne({ email });
     if (!admin) {
-      return res.status(401).json({ message: "Invalid credential" });
+      return next(errMessage(401, "Invalid credential"));
     }
     const isPasswordMatch = await bcrypt.compare(password, admin.password);
     if (!isPasswordMatch) {
-      return res.status(401).json({ message: "invalid credential" });
+      return next(errMessage(401, "Invalid credential"));
     }
     const token = jwt.sign({ adminId: admin._id }, process.env.JWT_SECRET, {
       expiresIn: "1h",
@@ -67,7 +68,7 @@ export const loginAdmin = async (req, res) => {
       },
     });
   } catch (error) {
-    return res.status(500).json({ message: `Server Error: ${error}` });
+    return next(errMessage(500, `Server Error: ${error.message}`));
   }
 };
 
@@ -84,21 +85,18 @@ export const logoutAdmin = async (req, res) => {
 export const getCurrentAdmin = async (req, res) => {
   if (!req.admin || !req.admin.adminId) {
     // This case should ideally be caught by the middleware sending 401/403
-    return res.status(401).json({ message: "Not authorized or token invalid" });
+    return next(errMessage(401, "Not authorized or token invalid"));
   }
   try {
     const admin = await Admin.findById(req.admin.adminId).select("-password");
     if (!admin) {
-      return res
-        .status(404)
-        .json({ message: "Admin associated with token not found" });
+      return next(errMessage(404, "Admin associated with token not found"));
     }
     res.status(200).json({ message: "Admin verified", admin });
   } catch (error) {
-    res.status(500).json({
-      message: "Server error verifying admin",
-      details: error.message,
-    });
+    return next(
+      errMessage(500, `Server error verifying admin: ${error.message}`)
+    );
   }
 };
 
@@ -116,10 +114,9 @@ export const getAllProducts = async (_req, res) => {
       products,
     });
   } catch (error) {
-    return res.status(500).json({
-      message: "ERROR: Failed to fetch products",
-      details: error.message,
-    });
+    return next(
+      errMessage(500, `ERROR: Failed to fetch products: ${error.message}`)
+    );
   }
 };
 
@@ -127,18 +124,17 @@ export const getProductById = async (req, res) => {
   try {
     const { id } = req.params;
     if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).json({ message: "Invalid product ID format" });
+      return next(errMessage(400, "Invalid product ID format"));
     }
     const product = await Product.findById(id);
     if (!product) {
-      return res.status(404).json({ message: "Product not found" });
+      return next(errMessage(404, "Product not found"));
     }
     return res.json({ message: "SUCCESS: Retrieved product", product });
   } catch (error) {
-    return res.status(500).json({
-      message: "ERROR: Failed to fetch product",
-      details: error.message,
-    });
+    return next(
+      errMessage(500, `ERROR: Failed to fetch product: ${error.message}`)
+    );
   }
 };
 
@@ -151,14 +147,11 @@ export const createNewProduct = async (req, res) => {
       .json({ message: "SUCCESS: New Product created", data: savedProduct });
   } catch (error) {
     if (error.name === "ValidationError") {
-      return res
-        .status(400)
-        .json({ message: "Validation Error", details: error.message });
+      return next(errMessage(400, `Validation Error: ${error.message}`));
     }
-    return res.status(500).json({
-      message: "ERROR: Failed to create product",
-      details: error.message,
-    });
+    return next(
+      errMessage(500, `ERROR: Failed to create product: ${error.message}`)
+    );
   }
 };
 
@@ -166,14 +159,14 @@ export const updateProductById = async (req, res) => {
   try {
     const { id } = req.params;
     if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).json({ message: "Invalid product ID format" });
+      return next(errMessage(400, "Invalid product ID format"));
     }
     const updatedProduct = await Product.findByIdAndUpdate(id, req.body, {
       new: true, // Return the updated document
       runValidators: true, // Run schema validators on update
     });
     if (!updatedProduct) {
-      return res.status(404).json({ message: "Product not found" });
+      return next(errMessage(404, "Product not found"));
     }
     return res.json({
       message: "SUCCESS: Product updated",
@@ -181,14 +174,11 @@ export const updateProductById = async (req, res) => {
     });
   } catch (error) {
     if (error.name === "ValidationError") {
-      return res
-        .status(400)
-        .json({ message: "Validation Error", details: error.message });
+      return next(errMessage(400, `Validation Error: ${error.message}`));
     }
-    return res.status(500).json({
-      message: "ERROR: Failed to update product",
-      details: error.message,
-    });
+    return next(
+      errMessage(500, `ERROR: Failed to update product: ${error.message}`)
+    );
   }
 };
 
@@ -196,11 +186,11 @@ export const deleteProductById = async (req, res) => {
   try {
     const { id } = req.params;
     if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).json({ message: "Invalid product ID format" });
+      return next(errMessage(400, "Invalid product ID format"));
     }
     const deletedProduct = await Product.findByIdAndDelete(id);
     if (!deletedProduct) {
-      return res.status(404).json({ message: "Product not found" });
+      return next(errMessage(404, "Product not found"));
     }
     // Use 200 with message or 204 (No Content)
     return res
@@ -208,10 +198,9 @@ export const deleteProductById = async (req, res) => {
       .json({ message: "SUCCESS: Product deleted", data: { _id: id } });
     // return res.status(204).send();
   } catch (error) {
-    return res.status(500).json({
-      message: "ERROR: Failed to delete product",
-      details: error.message,
-    });
+    return next(
+      errMessage(500, `ERROR: Failed to delete product: ${error.message}`)
+    );
   }
 };
 
@@ -225,10 +214,9 @@ export const getAllOrders = async (_req, res) => {
     const orders = await Order.find().sort({ createdAt: -1 }); // Sort by newest first
     return res.json({ message: "SUCCESS: Retrieved all orders", data: orders });
   } catch (error) {
-    return res.status(500).json({
-      message: "ERROR: Failed to fetch orders",
-      details: error.message,
-    });
+    return next(
+      errMessage(500, `ERROR: Failed to fetch orders: ${error.message}`)
+    );
   }
 };
 
@@ -236,19 +224,18 @@ export const getOrderById = async (req, res) => {
   try {
     const { id } = req.params;
     if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).json({ message: "Invalid order ID format" });
+      return next(errMessage(400, "Invalid order ID format"));
     }
     // Consider populating user/product details: .populate('user').populate('items.product')
     const order = await Order.findById(id);
     if (!order) {
-      return res.status(404).json({ message: "Order not found" });
+      return next(errMessage(404, "Order not found"));
     }
     return res.json({ message: "SUCCESS: Retrieved order", data: order });
   } catch (error) {
-    return res.status(500).json({
-      message: "ERROR: Failed to fetch order",
-      details: error.message,
-    });
+    return next(
+      errMessage(500, `ERROR: Failed to fetch order: ${error.message}`)
+    );
   }
 };
 
@@ -258,7 +245,7 @@ export const updateOrder = async (req, res) => {
   try {
     const { id } = req.params;
     if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).json({ message: "Invalid order ID format" });
+      return next(errMessage(400, "Invalid order ID format"));
     }
 
     // Example: Only allow updating 'status' and 'trackingNumber'
@@ -276,19 +263,16 @@ export const updateOrder = async (req, res) => {
       runValidators: true,
     });
     if (!updatedOrder) {
-      return res.status(404).json({ message: "Order not found" });
+      return next(errMessage(404, "Order not found"));
     }
     return res.json({ message: "SUCCESS: Order updated", data: updatedOrder });
   } catch (error) {
     if (error.name === "ValidationError") {
-      return res
-        .status(400)
-        .json({ message: "Validation Error", details: error.message });
+      return next(errMessage(400, `Validation Error: ${error.message}`));
     }
-    return res.status(500).json({
-      message: "ERROR: Failed to update order",
-      details: error.message,
-    });
+    return next(
+      errMessage(500, `ERROR: Failed to update order: ${error.message}`)
+    );
   }
 };
 
@@ -303,10 +287,9 @@ export const getAllUsers = async (_req, res) => {
     const users = await User.find().select("-password");
     return res.json({ message: "SUCCESS: Retrieved all users", data: users });
   } catch (error) {
-    return res.status(500).json({
-      message: "ERROR: Failed to fetch users",
-      details: error.message,
-    });
+    return next(
+      errMessage(500, `ERROR: Failed to fetch users: ${error.message}`)
+    );
   }
 };
 
@@ -317,16 +300,12 @@ export const createNewUser = async (req, res) => {
     const { name, email, password, fullName } = req.body; // Adjust fields as per your User model
     // Basic validation
     if (!name || !email || !password) {
-      return res
-        .status(400)
-        .json({ message: "Name, email, and password are required" });
+      return next(errMessage(400, "Name, email, and password are required"));
     }
     // Check if user already exists
     const existingUser = await User.findOne({ email });
     if (existingUser) {
-      return res
-        .status(409)
-        .json({ message: "User with this email already exists" }); // 409 Conflict
+      return next(errMessage(409, "User with this email already exists"));
     }
 
     // Hash password before saving
@@ -350,14 +329,12 @@ export const createNewUser = async (req, res) => {
       .json({ message: "SUCCESS: User created", data: userResponse });
   } catch (error) {
     if (error.name === "ValidationError") {
-      return res
-        .status(400)
-        .json({ message: "Validation Error", details: error.message });
+      return next(errMessage(400, `Validation Error: ${error.message}`));
     }
-    return res.status(500).json({
-      message: "ERROR: Failed to create user",
-      details: error.message,
-    });
+
+    return next(
+      errMessage(500, `ERROR: Failed to create user: ${error.message}`)
+    );
   }
 };
 
@@ -365,15 +342,15 @@ export const updateUserById = async (req, res) => {
   try {
     const { id } = req.params;
     if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).json({ message: "Invalid user ID format" });
+      return next(errMessage(400, "Invalid user ID format"));
     }
 
     // Prevent password update through this route for security
     const { password, ...updateData } = req.body;
     if (password) {
-      return res
-        .status(400)
-        .json({ message: "Password cannot be updated via this route." });
+      return next(
+        errMessage(400, "Password cannot be updated via this route.")
+      );
     }
 
     const updatedUser = await User.findByIdAndUpdate(id, updateData, {
@@ -382,19 +359,16 @@ export const updateUserById = async (req, res) => {
     }).select("-password"); // Exclude password from the returned object
 
     if (!updatedUser) {
-      return res.status(404).json({ message: "User not found" });
+      return next(errMessage(404, "User not found"));
     }
     return res.json({ message: "SUCCESS: User updated", data: updatedUser });
   } catch (error) {
     if (error.name === "ValidationError") {
-      return res
-        .status(400)
-        .json({ message: "Validation Error", details: error.message });
+      return next(errMessage(400, `Validation Error ${error.message}`));
     }
-    return res.status(500).json({
-      message: "ERROR: Failed to update user",
-      details: error.message,
-    });
+    return next(
+      errMessage(500, `ERROR: Failed to update user: ${error.message}`)
+    );
   }
 };
 
@@ -402,20 +376,19 @@ export const deleteUserById = async (req, res) => {
   try {
     const { id } = req.params;
     if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).json({ message: "Invalid user ID format" });
+      return next(errMessage(400, "Invalid user ID format"));
     }
     const deletedUser = await User.findByIdAndDelete(id);
     if (!deletedUser) {
-      return res.status(404).json({ message: "User not found" });
+      return next(errMessage(404, "User not found"));
     }
     return res
       .status(200)
       .json({ message: "SUCCESS: User deleted", data: { _id: id } });
     // return res.status(204).send();
   } catch (error) {
-    return res.status(500).json({
-      message: "ERROR: Failed to delete user",
-      details: error.message,
-    });
+    return next(
+      errMessage(500, `ERROR: Failed to delete user: ${error.message}`)
+    );
   }
 };

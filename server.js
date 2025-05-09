@@ -18,7 +18,7 @@ const __dirname = path.dirname(__filename);
 
 const whitelist = [
   "http://localhost:5173",
-  "https://jsd9-pheonix-wicianburi-frontend.vercel.app/",
+  "https://jsd9-pheonix-wicianburi-frontend.vercel.app",
 ];
 const corsOptions = {
   origin: function (origin, callback) {

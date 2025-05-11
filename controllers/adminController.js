@@ -141,11 +141,11 @@ export const getProductById = async (req, res, next) => {
 
 export const createNewProduct = async (req, res, next) => {
   try {
-    const newProduct = new Product(req.body);
-    const savedProduct = await newProduct.save();
+    const product = new Product(req.body);
+    await product.save();
     return res
       .status(201)
-      .json({ message: "SUCCESS: New Product created", data: savedProduct });
+      .json({ message: "SUCCESS: New Product created", product });
   } catch (error) {
     if (error.name === "ValidationError") {
       return next(errMessage(400, `Validation Error: ${error.message}`));
@@ -162,16 +162,16 @@ export const updateProductById = async (req, res, next) => {
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return next(errMessage(400, "Invalid product ID format"));
     }
-    const updatedProduct = await Product.findByIdAndUpdate(id, req.body, {
+    const product = await Product.findByIdAndUpdate(id, req.body, {
       new: true, // Return the updated document
       runValidators: true, // Run schema validators on update
     });
-    if (!updatedProduct) {
+    if (!product) {
       return next(errMessage(404, "Product not found"));
     }
     return res.json({
       message: "SUCCESS: Product updated",
-      data: updatedProduct,
+      product,
     });
   } catch (error) {
     if (error.name === "ValidationError") {

@@ -2,12 +2,13 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import mongoose from "mongoose";
 import Admin from "../models/Admin.js";
+import { Product } from "../models/Product.js";
 import errMessage from "../utils/errMessage.js";
 
 // Auth
 // adminRoutes.post("/auth/register", createNewAdmin);
 // adminRoutes.post("/auth/login", loginAdmin);
-export const createNewAdmin = async (req, res) => {
+export const createNewAdmin = async (req, res, next) => {
   const { username, email, password } = req.body;
   if (!username || !email || !password) {
     return next(errMessage(400, "Username, Email, or Password is missing"));
@@ -31,7 +32,7 @@ export const createNewAdmin = async (req, res) => {
   }
 };
 
-export const loginAdmin = async (req, res) => {
+export const loginAdmin = async (req, res, next) => {
   const { email, password } = req.body;
   if (!email || !password) {
     return next(errMessage(400, "Email or Password is missing"));
@@ -72,7 +73,7 @@ export const loginAdmin = async (req, res) => {
   }
 };
 
-export const logoutAdmin = async (req, res) => {
+export const logoutAdmin = async (req, res, next) => {
   res.clearCookie("accessToken", {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
@@ -82,7 +83,7 @@ export const logoutAdmin = async (req, res) => {
   res.status(200).json({ message: "SUCESS: Logged out" });
 };
 
-export const getCurrentAdmin = async (req, res) => {
+export const getCurrentAdmin = async (req, res, next) => {
   if (!req.admin || !req.admin.adminId) {
     // This case should ideally be caught by the middleware sending 401/403
     return next(errMessage(401, "Not authorized or token invalid"));
@@ -106,7 +107,7 @@ export const getCurrentAdmin = async (req, res) => {
 // adminRoutes.post("/products", createNewProduct);
 // adminRoutes.put("/products/:id", updateProductById);
 // adminRoutes.delete("/products/:id", deleteProductById);
-export const getAllProducts = async (_req, res) => {
+export const getAllProducts = async (_req, res, next) => {
   try {
     const products = await Product.find();
     return res.json({
@@ -120,7 +121,7 @@ export const getAllProducts = async (_req, res) => {
   }
 };
 
-export const getProductById = async (req, res) => {
+export const getProductById = async (req, res, next) => {
   try {
     const { id } = req.params;
     if (!mongoose.Types.ObjectId.isValid(id)) {
@@ -138,7 +139,7 @@ export const getProductById = async (req, res) => {
   }
 };
 
-export const createNewProduct = async (req, res) => {
+export const createNewProduct = async (req, res, next) => {
   try {
     const newProduct = new Product(req.body);
     const savedProduct = await newProduct.save();
@@ -155,7 +156,7 @@ export const createNewProduct = async (req, res) => {
   }
 };
 
-export const updateProductById = async (req, res) => {
+export const updateProductById = async (req, res, next) => {
   try {
     const { id } = req.params;
     if (!mongoose.Types.ObjectId.isValid(id)) {
@@ -182,7 +183,7 @@ export const updateProductById = async (req, res) => {
   }
 };
 
-export const deleteProductById = async (req, res) => {
+export const deleteProductById = async (req, res, next) => {
   try {
     const { id } = req.params;
     if (!mongoose.Types.ObjectId.isValid(id)) {
@@ -208,7 +209,7 @@ export const deleteProductById = async (req, res) => {
 // adminRoutes.get("/orders", getAllOrders);
 // adminRoutes.get("/orders/:id", getOrderById);
 // adminRoutes.put("/orders/:id", updateOrder);
-export const getAllOrders = async (_req, res) => {
+export const getAllOrders = async (_req, res, next) => {
   try {
     // Consider populating user details if needed: .populate('user', 'name email')
     const orders = await Order.find().sort({ createdAt: -1 }); // Sort by newest first
@@ -220,7 +221,7 @@ export const getAllOrders = async (_req, res) => {
   }
 };
 
-export const getOrderById = async (req, res) => {
+export const getOrderById = async (req, res, next) => {
   try {
     const { id } = req.params;
     if (!mongoose.Types.ObjectId.isValid(id)) {
@@ -239,7 +240,7 @@ export const getOrderById = async (req, res) => {
   }
 };
 
-export const updateOrder = async (req, res) => {
+export const updateOrder = async (req, res, next) => {
   // Typically only update specific fields like status, tracking info, etc.
   // Avoid allowing updates to items, total price, user directly via this endpoint.
   try {
@@ -281,7 +282,7 @@ export const updateOrder = async (req, res) => {
 // adminRoutes.post("/users", createNewUser);
 // adminRoutes.put("/users/:id", updateUserById);
 // adminRoutes.delete("/users/:id", deleteUserById);
-export const getAllUsers = async (_req, res) => {
+export const getAllUsers = async (_req, res, next) => {
   try {
     // Exclude password field from the result
     const users = await User.find().select("-password");
@@ -293,7 +294,7 @@ export const getAllUsers = async (_req, res) => {
   }
 };
 
-export const createNewUser = async (req, res) => {
+export const createNewUser = async (req, res, next) => {
   // Note: This allows admins to create users. Ensure this is intended.
   // Usually registration is handled separately.
   try {
@@ -338,7 +339,7 @@ export const createNewUser = async (req, res) => {
   }
 };
 
-export const updateUserById = async (req, res) => {
+export const updateUserById = async (req, res, next) => {
   try {
     const { id } = req.params;
     if (!mongoose.Types.ObjectId.isValid(id)) {
@@ -372,7 +373,7 @@ export const updateUserById = async (req, res) => {
   }
 };
 
-export const deleteUserById = async (req, res) => {
+export const deleteUserById = async (req, res, next) => {
   try {
     const { id } = req.params;
     if (!mongoose.Types.ObjectId.isValid(id)) {

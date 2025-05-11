@@ -1,6 +1,7 @@
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import User from "../models/User.js";
+import errMessage from "../utils/errMessage.js";
 
 export const registerUser = async (req, res) => {
   const { email, firstName, lastName, password } = req.body;
@@ -37,7 +38,7 @@ export const loginUser = async (req, res) => {
     const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, {
       expiresIn: "1h",
     });
-    
+
     const isProd = process.env.NODE_ENV === "production";
 
     res
@@ -56,16 +57,18 @@ export const loginUser = async (req, res) => {
           firstName: user.firstName,
           lastName: user.lastName,
           email: user.email,
+          phone: user.phone,
+          address: user.address,
         },
       });
-    } catch (error) {
-      res.status(500).json({ error: "เกิดข้อผิดพลาดระหว่างเข้าสู่ระบบ" });
-    }
+  } catch (error) {
+    res.status(500).json({ error: "เกิดข้อผิดพลาดระหว่างเข้าสู่ระบบ" });
+  }
 };
 
 export const logoutUser = (req, res) => {
   const isProd = process.env.NODE_ENV === "production";
-  console.log("Logged out!")
+  console.log("Logged out!");
   res.clearCookie("accessToken", {
     httpOnly: true,
     secure: isProd,
@@ -75,7 +78,6 @@ export const logoutUser = (req, res) => {
 
   res.status(200).json({ message: "ออกจากระบบแล้ว" });
 };
-
 
 // Get All Users
 export const getUsers = async (req, res) => {
@@ -105,5 +107,82 @@ export const getCurrentUser = async (req, res) => {
       message: "ดึงข้อมูลผู้ใช้ล้มเหลว",
       details: err.message,
     });
+  }
+};
+
+export const updateCurrentUser = async (req, res, next) => {
+  const { firstName, lastName, email, phone, address } = req.body;
+  const userId = req.user.user._id;
+
+  try {
+    const user = await User.findById(userId);
+
+    if (!user) {
+      return next(errMessage(404, "ไม่พบผู้ใช้"));
+    }
+
+    // Update fields if provided in the request body
+    if (firstName !== undefined) {
+      if (!firstName.trim()) {
+        return next(errMessage(400, "ชื่อจริงห้ามเป็นค่าว่าง"));
+      }
+      user.firstName = firstName;
+    }
+    if (lastName !== undefined) {
+      if (!lastName.trim()) {
+        return next(errMessage(400, "นามสกุลห้ามเป็นค่าว่าง"));
+      }
+      user.lastName = lastName;
+    }
+    if (email !== undefined) {
+      if (!email.trim()) {
+        return next(errMessage(400, "อีเมลห้ามเป็นค่าว่าง"));
+      }
+      // Check if email already exists for another user, excluding the current user
+      if (email !== user.email) {
+        const existingUser = await User.findOne({ email });
+        if (existingUser) {
+          return next(errMessage(400, "อีเมลนี้มีผู้ใช้งานอื่นแล้ว"));
+        }
+      }
+      user.email = email;
+    }
+    if (phone !== undefined) {
+      user.phone = phone;
+    }
+    if (address !== undefined) {
+      // Update nested address fields if provided
+      if (address.street !== undefined) {
+        user.address.street = address.street;
+      }
+      if (address.subDistrict !== undefined) {
+        user.address.subDistrict = address.subDistrict;
+      }
+      if (address.district !== undefined) {
+        user.address.district = address.district;
+      }
+      if (address.province !== undefined) {
+        user.address.province = address.province;
+      }
+      if (address.postal !== undefined) {
+        user.address.postal = address.postal;
+      }
+    }
+
+    await user.save();
+
+    res.json({
+      message: "อัปเดตข้อมูลผู้ใช้สำเร็จ",
+      user: {
+        _id: user._id,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        email: user.email,
+        phone: user.phone,
+        address: user.address,
+      },
+    });
+  } catch (err) {
+    next(errMessage(500, "เกิดข้อผิดพลาดระหว่างอัปเดตข้อมูลผู้ใช้"));
   }
 };

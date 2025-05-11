@@ -8,6 +8,7 @@ import { fileURLToPath } from "url";
 import errorHandler from "./middlewares/errorHandler.js";
 import limiter from "./middlewares/rateLimiter.js";
 import userRoutes from "./routes/userRoutes.js";
+import orderRoutes from "./routes/orderRoutes.js";
 
 dotenv.config();
 
@@ -44,7 +45,7 @@ app.use(express.static(path.join(__dirname, "public")));
 app.use("/api/auth", userRoutes);
 
 // app.use("/api/products", productRoutes);
-// app.use("/api/orders", orderRoutes);
+app.use("/api/orders", orderRoutes);
 // app.use("/api/reviews", reviewRoutes);
 
 // TODO : Kob working on this

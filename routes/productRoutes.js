@@ -2,15 +2,15 @@ import { Router } from "express";
 import {
   getAllProducts,
   getProductById,
-  searchProducts,
+  getSimilarProducts,
 } from "../controllers/productController.js";
 
 const productRoutes = Router();
 
 productRoutes.get("/", getAllProducts);
 
-productRoutes.get("/:id", getProductById);
+productRoutes.get("/similar", getSimilarProducts);
 
-productRoutes.get("/search-products", searchProducts);
+productRoutes.get("/:id", getProductById);
 
 export default productRoutes;

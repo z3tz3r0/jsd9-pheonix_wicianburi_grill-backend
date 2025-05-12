@@ -1,38 +1,60 @@
+import cookieParser from "cookie-parser";
+import cors from "cors";
+import dotenv from "dotenv";
 import express from "express";
 import mongoose from "mongoose";
-import dotenv from "dotenv";
-import cors from "cors";
-import userRoutes from "./routes/userRoutes.js";
-import cookieParser from "cookie-parser";
+import path from "path";
+import { fileURLToPath } from "url";
 import errorHandler from "./middlewares/errorHandler.js";
+import limiter from "./middlewares/rateLimiter.js";
+import userRoutes from "./routes/userRoutes.js";
+import orderRoutes from "./routes/orderRoutes.js";
+// import reviewRoutes from "./routes/reviewRoutes.js";
+import productRoutes from "./routes/productRoutes.js";
 
 
 dotenv.config();
 
 const app = express();
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+const whitelist = [
+  "http://localhost:5173",
+  "https://jsd9-pheonix-wicianburi-frontend.vercel.app",
+];
+const corsOptions = {
+  origin: function (origin, callback) {
+    if (!origin || whitelist.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
+  credentials: true,
+};
+
 // Middleware
-app.use(
-  cors({
-    origin: "http://localhost:5173",
-    credentials: true,
-  })
-); 
+app.use(cors(corsOptions));
+app.use(limiter);
 
 app.use(express.json());
 app.use(cookieParser());
 
+app.use(express.static(path.join(__dirname, "public")));
+
 // Routes
 app.use("/api/auth", userRoutes);
 
-// app.use("/api/products", productRoutes);
-// app.use("/api/orders", orderRoutes);
+app.use("/api/products", productRoutes);
+app.use("/api/orders", orderRoutes);
 // app.use("/api/reviews", reviewRoutes);
 
 // TODO : Kob working on this
 // TODO : required other models to be done to see what schema look like.
 import adminRoutes from "./routes/adminRoutes.js";
-import limiter from "./middlewares/rateLimiter.js";
+
 app.use("/admin", adminRoutes);
 
 const connectDB = async () => {

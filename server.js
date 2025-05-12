@@ -9,8 +9,9 @@ import errorHandler from "./middlewares/errorHandler.js";
 import limiter from "./middlewares/rateLimiter.js";
 import userRoutes from "./routes/userRoutes.js";
 import orderRoutes from "./routes/orderRoutes.js";
-// import reviewRoutes from "./routes/reviewRoutes.js";
+import reviewRoutes from "./routes/reviewRoutes.js";
 import productRoutes from "./routes/productRoutes.js";
+
 
 
 dotenv.config();
@@ -46,10 +47,10 @@ app.use(express.static(path.join(__dirname, "public")));
 
 // Routes
 app.use("/api/auth", userRoutes);
-
 app.use("/api/products", productRoutes);
 app.use("/api/orders", orderRoutes);
-// app.use("/api/reviews", reviewRoutes);
+app.use("/api/reviews", reviewRoutes);
+
 
 // TODO : Kob working on this
 // TODO : required other models to be done to see what schema look like.

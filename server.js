@@ -8,14 +8,10 @@ import { fileURLToPath } from "url";
 import errorHandler from "./middlewares/errorHandler.js";
 import limiter from "./middlewares/rateLimiter.js";
 import userRoutes from "./routes/userRoutes.js";
-<<<<<<< HEAD
-import reviewRoutes from "./routes/reviewRoutes.js"
-=======
 import orderRoutes from "./routes/orderRoutes.js";
-// import reviewRoutes from "./routes/reviewRoutes.js";
+import reviewRoutes from "./routes/reviewRoutes.js";
 // import productRoutes from "./routes/productRoutes.js";
 
->>>>>>> develop
 
 dotenv.config();
 

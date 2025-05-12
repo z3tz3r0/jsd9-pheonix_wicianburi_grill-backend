@@ -3,12 +3,14 @@ import {
   getAllProducts,
   getProductById,
   searchProducts,
-} from "../controllers/productController";
+} from "../controllers/productController.js";
 
-const productRouters = Router();
+const productRoutes = Router();
 
-productRouters.get("/products", getAllProducts);
+productRoutes.get("/", getAllProducts);
 
-productRouters.get("/products/:id", getProductById);
+productRoutes.get("/:id", getProductById);
 
-productRouters.get("/search-products", searchProducts);
+productRoutes.get("/search-products", searchProducts);
+
+export default productRoutes;

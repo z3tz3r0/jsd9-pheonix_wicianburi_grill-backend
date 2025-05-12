@@ -9,12 +9,8 @@ const OrderSchema = new Schema(
     },
     userId: {
         type: Schema.Types.ObjectId,
-        ref: "User", // อ้างอิงไปยัง Model ชื่อ "User"
+        ref: "User",
         required: true,
-    },
-    orderDate: {
-        type: Date,
-        default: Date.now // ตั้งค่าเริ่มต้นเป็นเวลาปัจจุบัน
     },
     stateVariant: {
         type: String,

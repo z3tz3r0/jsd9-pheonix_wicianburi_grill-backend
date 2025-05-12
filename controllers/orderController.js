@@ -85,7 +85,7 @@ export const getUserOrders = async (req, res, next) => {
 
 // get order by id
 export const getOrderById = async (req, res, next) => {
-  const orderId = req.params.orderId;
+  const orderId = req.params.id;
   const user = req.user.user;
 
   try {

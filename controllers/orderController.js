@@ -2,10 +2,12 @@ import { Order} from "../models/Order.js";
 import { Product } from "../models/Product.js";
 
 
-// get all orders
+// get all orders by user
 export const getAllOrders = async (req, res) => {
+    const { user } = req.user;
+
     try {
-      const orders = await Oeder.find().sort({ createdAt: -1, isPinned: -1 });
+      const orders = await Order.find().sort({ createdAt: -1, isPinned: -1 });
       return res.json({
         orders,
         message: "เรียกดูคำสั่งซื้อทั้งหมดสำเร็จ",
@@ -38,7 +40,7 @@ export const createNewOrder = async (req, res) => {
         }
 
         const product = await Product.findById(item.productId);
-      if (!product || !product.variants.find(v => v.label === item.variantValue)) {
+      if (!product || !product.variants.find(v => v.value === item.variantValue)) {
         return res.status(400).json({ message: `สินค้า ${item.productId} หรือ variant ไม่ถูกต้อง` });
       }
     }
@@ -61,3 +63,4 @@ export const createNewOrder = async (req, res) => {
   }
 };
 
+//

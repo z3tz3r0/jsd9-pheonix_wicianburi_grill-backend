@@ -9,6 +9,9 @@ import errorHandler from "./middlewares/errorHandler.js";
 import limiter from "./middlewares/rateLimiter.js";
 import userRoutes from "./routes/userRoutes.js";
 import orderRoutes from "./routes/orderRoutes.js";
+// import reviewRoutes from "./routes/reviewRoutes.js";
+// import productRoutes from "./routes/productRoutes.js";
+
 
 dotenv.config();
 

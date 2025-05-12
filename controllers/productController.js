@@ -22,6 +22,18 @@ export const getAllProducts = async (req, res) => {
           reviewCount: {
             $size: "$reviewsData", // Count the number of reviews
           },
+          typeSortOrder: {
+            $switch: {
+              branches: [
+                { case: { $eq: ["$type", "ข้าวหอมมะลิ"] }, then: 1 },
+                { case: { $eq: ["$type", "ข้าวเหนียว"] }, then: 2 },
+                { case: { $eq: ["$type", "ข้าวขาว"] }, then: 3 },
+                { case: { $eq: ["$type", "ข้าวเพื่อสุขภาพ"] }, then: 4 },
+                { case: { $eq: ["$type", "สินค้าแปรรูป"] }, then: 99 }, // Ensure this comes last
+              ],
+              default: 5, // Other types
+            },
+          },
         },
       },
       {
@@ -29,7 +41,7 @@ export const getAllProducts = async (req, res) => {
           reviewsData: 0, // Remove the array of all reviews from the final product object to keep response lean
         },
       },
-      { $sort: { createdAt: -1 } }, // Optional: sort products, e.g., by creation date
+      { $sort: { typeSortOrder: 1, averageStar: -1, name: 1 } }, // Optional: sort products, e.g., by creation date
     ]);
 
     return res.json({

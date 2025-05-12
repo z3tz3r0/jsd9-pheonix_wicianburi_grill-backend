@@ -1,36 +1,33 @@
-import Review from "../models/Review";
-import Product from "../models/Product";
+import Review from "../models/Review.js";
+//import Product from "../models/Product";
+//import User from "../models/User.js";
+import errMessage from "../utils/errMessage.js";
 import mongoose from "mongoose";
 
 // @desc    Create a new review
 // @route   POST /api/reviews
 // @access  Private (users must be logged in)
 
-const createReview = async (req, res) => {
+export const createReview = async (req, res) => {
   try {
     // Get data from the request body, using your schema field names
     const { productId, star, comment, firstName } = req.body;
     // Assuming authentication middleware puts user info on req.user
-    const userId = req.user._id; // Get userId from authenticated user
+    const userId = req.user.user._id; // Get userId from authenticated user
 
     // Basic Server-Side Validation
     if (!productId || !userId || star === undefined || !comment || !firstName) { // Check for undefined star
-      res.status(400).json({ message: 'Please provide all required fields for the review (Product ID, User ID, Star Rating, Comment, First Name).' });
-      return;
+      //res.status(400).json({ message: 'Please provide all required fields for the review (Product ID, User ID, Star Rating, Comment, First Name).' });
+      return next(errMessage(400, 'Please provide all required fields for the review (Product ID, User ID, Star Rating, Comment, First Name).'));;
     }
      // Validate star range based on your schema (min 0.5, max 5)
      const numericStar = Number(star); // Convert to number for validation
      if (isNaN(numericStar) || numericStar < 0.5 || numericStar > 5) {
-         res.status(400).json({ message: 'Star rating must be a number between 0.5 and 5.' });
-         return;
+         //res.status(400).json({ message: 'Star rating must be a number between 0.5 and 5.' });
+         return next(errMessage(400, 'Star rating must be a number between 0.5 and 5.'));
      }
 
-    // Optional: Check if the user has already reviewed this product
-    // const existingReview = await Review.findOne({ productId, userId });
-    // if (existingReview) {
-    //   res.status(400).json({ message: 'You have already submitted a review for this product.' });
-    //   return;
-    // }
+    
 
     const newReview = new Review({
       productId,
@@ -56,14 +53,14 @@ const createReview = async (req, res) => {
 // @route   GET /api/reviews/:productId
 // @access  Public
 
-const getReviewsForProduct = async (req, res) => {
+export const getReviewsForProduct = async (req, res) => {
   try {
     const productId = req.params.productId; // Get product ID from URL
 
     // Optional: Validate if the productId is a valid MongoDB ObjectId format
     if (!mongoose.Types.ObjectId.isValid(productId)) {
-        res.status(400).json({ message: 'Invalid Product ID format' });
-        return;
+        //res.status(400).json({ message: 'Invalid Product ID format' });
+        return next(errMessage(400, 'Invalid Product ID format'));
     }
 
     // Find reviews for the product, sort by newest first
@@ -76,7 +73,8 @@ const getReviewsForProduct = async (req, res) => {
 
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: 'Server Error: Could not fetch reviews.' });
+    //res.status(500).json({ message: 'Server Error: Could not fetch reviews.' });
+    return next (errMessage(500, 'Server Error: Could not fetch reviews.'));
   }
 };
 
@@ -84,6 +82,4 @@ const getReviewsForProduct = async (req, res) => {
 
 
 
-
-// Export the function(s) so they can be used in your routes file
-export { createReview, getReviewsForProduct };
+//export { createReview, getReviewsForProduct };

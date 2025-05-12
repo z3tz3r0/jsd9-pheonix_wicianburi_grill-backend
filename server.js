@@ -8,6 +8,7 @@ import { fileURLToPath } from "url";
 import errorHandler from "./middlewares/errorHandler.js";
 import limiter from "./middlewares/rateLimiter.js";
 import userRoutes from "./routes/userRoutes.js";
+import reviewRoutes from "./routes/reviewRoutes.js"
 
 dotenv.config();
 
@@ -45,7 +46,7 @@ app.use("/api/auth", userRoutes);
 
 // app.use("/api/products", productRoutes);
 // app.use("/api/orders", orderRoutes);
-// app.use("/api/reviews", reviewRoutes);
+app.use("/api/reviews", reviewRoutes);
 
 // TODO : Kob working on this
 // TODO : required other models to be done to see what schema look like.

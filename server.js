@@ -52,13 +52,8 @@ app.use(express.static(path.join(__dirname, "public")));
 app.use("/api/auth", userRoutes);
 
 // app.use("/api/products", productRoutes);
-<<<<<<< HEAD
 // app.use("/api/orders", orderRoutes);
 app.use("/api/reviews", reviewRoutes);
-=======
-app.use("/api/orders", orderRoutes);
-// app.use("/api/reviews", reviewRoutes);
->>>>>>> develop
 
 // TODO : Kob working on this
 // TODO : required other models to be done to see what schema look like.

@@ -9,7 +9,7 @@ const OrderSchema = new Schema(
     },
     userId: {
         type: Schema.Types.ObjectId,
-        ref: "User",                              // อ้างอิงไปยัง Model ชื่อ "User"
+        ref: "User",
         required: true,
     },
     stateVariant: {

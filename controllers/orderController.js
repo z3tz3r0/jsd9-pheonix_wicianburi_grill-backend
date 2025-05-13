@@ -93,26 +93,48 @@ export const getUserOrders = async (req, res, next) => {
 
 // get order by id
 export const getOrderById = async (req, res, next) => {
-  const orderId = req.params.id;
-  const user = req.user.user;
-
   try {
-    // Find the order by ID and ensure it belongs to the logged-in user
-    const order = await Order.findOne({ _id: orderId, userId: user._id });
+    const orderId = req.params.id;
+    const user = req.user.user;
+
+    const order = await Order.findOne({ _id: orderId, userId: user._id }).populate("orderItems.productId");
 
     if (!order) {
-      return next(errMessage(404, "ไม่พบรายละเอียดคำสั่งซื้อ"));
+      return res.status(404).json({ message: "ไม่พบคำสั่งซื้อ" });
     }
 
-    return res.status(200).json({
-      order,
+    const formattedItems = order.orderItems.map(item => {
+      const product = item.productId;
+      const variant = product.variants.find(v => v.value === item.variantValue);
+
+      return {
+        _id: item._id,
+        name: product.name,
+        image: product.image,
+        variantLabel: variant?.label || item.variantValue,
+        price: variant?.price || 0,
+        quantity: item.quantity,
+      };
+    });
+
+    res.status(200).json({
+      orderId: order.orderId,
+      userId: order.userId,
+      stateVariant: order.stateVariant,
+      paymentSlipLink: order.paymentSlipLink,
+      totalAmount: order.totalAmount,
+      deliveryFee: order.deliveryFee,
+      createdAt: order.createdAt,
+      updatedAt: order.updatedAt,
+      orderItems: formattedItems,
       message: "เรียกดูรายละเอียดคำสั่งซื้อสำเร็จ",
     });
   } catch (error) {
-    console.error("Error fetching order:", error);
-    return next(errMessage(500, "ไม่สามารถเรียกดูรายละเอียดคำสั่งซื้อได้"));
+    console.error("เกิดข้อผิดพลาด:", error);
+    return next(errMessage(500, "เกิดข้อผิดพลาดในการดึงข้อมูลคำสั่งซื้อ"));
   }
 };
+
 
 // update payment slip
 export const updatePaymentSlip = async (req, res) => {

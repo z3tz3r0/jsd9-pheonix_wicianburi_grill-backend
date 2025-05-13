@@ -141,7 +141,7 @@ export const updatePaymentSlip = async (req, res) => {
   const { paymentSlipLink } = req.body;
 
   try {
-    const order = await Order.findByIdAndUpdate(
+    const order = await Order.findOneAndUpdate(
       { orderId: orderId },
       { paymentSlipLink },
       { new: true }

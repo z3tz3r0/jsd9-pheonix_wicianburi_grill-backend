@@ -7,11 +7,11 @@ import path from "path";
 import { fileURLToPath } from "url";
 import errorHandler from "./middlewares/errorHandler.js";
 import limiter from "./middlewares/rateLimiter.js";
-import userRoutes from "./routes/userRoutes.js";
+import adminRoutes from "./routes/adminRoutes.js";
 import orderRoutes from "./routes/orderRoutes.js";
-// import reviewRoutes from "./routes/reviewRoutes.js";
 import productRoutes from "./routes/productRoutes.js";
-
+import reviewRoutes from "./routes/reviewRoutes.js";
+import userRoutes from "./routes/userRoutes.js";
 
 dotenv.config();
 
@@ -46,15 +46,9 @@ app.use(express.static(path.join(__dirname, "public")));
 
 // Routes
 app.use("/api/auth", userRoutes);
-
 app.use("/api/products", productRoutes);
 app.use("/api/orders", orderRoutes);
-// app.use("/api/reviews", reviewRoutes);
-
-// TODO : Kob working on this
-// TODO : required other models to be done to see what schema look like.
-import adminRoutes from "./routes/adminRoutes.js";
-
+app.use("/api/reviews", reviewRoutes);
 app.use("/admin", adminRoutes);
 
 const connectDB = async () => {

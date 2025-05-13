@@ -3,6 +3,7 @@ import jwt from "jsonwebtoken";
 import mongoose from "mongoose";
 import Admin from "../models/Admin.js";
 import { Product } from "../models/Product.js";
+import User from "../models/User.js";
 import errMessage from "../utils/errMessage.js";
 
 // Auth
@@ -298,9 +299,9 @@ export const createNewUser = async (req, res, next) => {
   // Note: This allows admins to create users. Ensure this is intended.
   // Usually registration is handled separately.
   try {
-    const { name, email, password, fullName } = req.body; // Adjust fields as per your User model
+    const { firstName, lastName, email, password, fullName } = req.body; // Adjust fields as per your User model
     // Basic validation
-    if (!name || !email || !password) {
+    if (!firstName || !lastName || !email || !password) {
       return next(errMessage(400, "Name, email, and password are required"));
     }
     // Check if user already exists
@@ -314,7 +315,8 @@ export const createNewUser = async (req, res, next) => {
     const hashedPassword = await bcrypt.hash(password, salt);
 
     const newUser = new User({
-      name,
+      firstName,
+      lastName,
       email,
       password: hashedPassword,
       fullName, // Add other fields as needed

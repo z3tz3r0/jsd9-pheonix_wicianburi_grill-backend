@@ -69,14 +69,14 @@ export const createNewOrder = async (req, res, next) => {
       message: "สร้างคำสั่งซื้อใหม่สำเร็จ",
     });
   } catch (error) {
-    return next(errMessage(500, "ไม่สามารถสร้างคำสั่งซื้อใหม่ได้"));
+    return next(errMessage(500, "เกิดข้อผิดพลาดในการสร้างคำสั่งซื้อ"));
   }
 };
 
 // get all orders by user
 export const getUserOrders = async (req, res, next) => {
+
   const user = req.user.user;
-  //const user = req.user;
 
   try {
     const orders = await Order.find({ userId: user._id }).sort({
@@ -87,7 +87,7 @@ export const getUserOrders = async (req, res, next) => {
       message: "เรียกดูคำสั่งซื้อทั้งหมดสำเร็จ",
     });
   } catch (err) {
-    return next(errMessage(500, "ไม่สามารถเรียกดูคำสั่งซื้อทั้งหมดได้"));
+    return next(errMessage(500, "เกิดข้อผิดพลาดในการเรียกดูคำสั่งซื้อ"));
   }
 };
 
@@ -97,7 +97,7 @@ export const getOrderById = async (req, res, next) => {
     const orderId = req.params.id;
     const user = req.user.user;
 
-    const order = await Order.findOne({ _id: orderId, userId: user._id }).populate("orderItems.productId");
+    const order = await Order.findOne({ orderId: orderId, userId: user._id }).populate("orderItems.productId");
 
     if (!order) {
       return res.status(404).json({ message: "ไม่พบคำสั่งซื้อ" });
@@ -130,8 +130,7 @@ export const getOrderById = async (req, res, next) => {
       message: "เรียกดูรายละเอียดคำสั่งซื้อสำเร็จ",
     });
   } catch (error) {
-    console.error("เกิดข้อผิดพลาด:", error);
-    return next(errMessage(500, "เกิดข้อผิดพลาดในการดึงข้อมูลคำสั่งซื้อ"));
+    return next(errMessage(500, "เกิดข้อผิดพลาดในการเรียกดูรายละเอียดคำสั่งซื้อ"));
   }
 };
 

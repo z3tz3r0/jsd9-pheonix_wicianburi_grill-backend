@@ -2,6 +2,7 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import mongoose from "mongoose";
 import Admin from "../models/Admin.js";
+import { Order } from "../models/Order.js";
 import { Product } from "../models/Product.js";
 import User from "../models/User.js";
 import errMessage from "../utils/errMessage.js";
@@ -213,7 +214,18 @@ export const deleteProductById = async (req, res, next) => {
 export const getAllOrders = async (_req, res, next) => {
   try {
     // Consider populating user details if needed: .populate('user', 'name email')
-    const orders = await Order.find().sort({ createdAt: -1 }); // Sort by newest first
+    const orders = await Order.find()
+      .populate({
+        path: "userId",
+        select: "firstName lastName email phone address",
+        model: "User",
+      })
+      .populate({
+        path: "orderItems.productId",
+        select: "name",
+        model: "Product",
+      })
+      .sort({ createdAt: -1 }); // Sort by newest first
     return res.json({ message: "SUCCESS: Retrieved all orders", data: orders });
   } catch (error) {
     return next(
@@ -252,7 +264,7 @@ export const updateOrder = async (req, res, next) => {
 
     // Example: Only allow updating 'status' and 'trackingNumber'
     const allowedUpdates = {
-      status: req.body.status,
+      stateVariant: req.body.stateVariant,
       trackingNumber: req.body.trackingNumber,
     };
     // Remove undefined fields so they don't overwrite existing data

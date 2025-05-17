@@ -2,7 +2,9 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import mongoose from "mongoose";
 import Admin from "../models/Admin.js";
+import { Order } from "../models/Order.js";
 import { Product } from "../models/Product.js";
+import User from "../models/User.js";
 import errMessage from "../utils/errMessage.js";
 
 // Auth
@@ -212,7 +214,18 @@ export const deleteProductById = async (req, res, next) => {
 export const getAllOrders = async (_req, res, next) => {
   try {
     // Consider populating user details if needed: .populate('user', 'name email')
-    const orders = await Order.find().sort({ createdAt: -1 }); // Sort by newest first
+    const orders = await Order.find()
+      .populate({
+        path: "userId",
+        select: "firstName lastName email phone address",
+        model: "User",
+      })
+      .populate({
+        path: "orderItems.productId",
+        select: "name",
+        model: "Product",
+      })
+      .sort({ createdAt: -1 }); // Sort by newest first
     return res.json({ message: "SUCCESS: Retrieved all orders", data: orders });
   } catch (error) {
     return next(
@@ -251,7 +264,7 @@ export const updateOrder = async (req, res, next) => {
 
     // Example: Only allow updating 'status' and 'trackingNumber'
     const allowedUpdates = {
-      status: req.body.status,
+      stateVariant: req.body.stateVariant,
       trackingNumber: req.body.trackingNumber,
     };
     // Remove undefined fields so they don't overwrite existing data
@@ -298,9 +311,9 @@ export const createNewUser = async (req, res, next) => {
   // Note: This allows admins to create users. Ensure this is intended.
   // Usually registration is handled separately.
   try {
-    const { name, email, password, fullName } = req.body; // Adjust fields as per your User model
+    const { firstName, lastName, email, password, fullName } = req.body; // Adjust fields as per your User model
     // Basic validation
-    if (!name || !email || !password) {
+    if (!firstName || !lastName || !email || !password) {
       return next(errMessage(400, "Name, email, and password are required"));
     }
     // Check if user already exists
@@ -314,7 +327,8 @@ export const createNewUser = async (req, res, next) => {
     const hashedPassword = await bcrypt.hash(password, salt);
 
     const newUser = new User({
-      name,
+      firstName,
+      lastName,
       email,
       password: hashedPassword,
       fullName, // Add other fields as needed

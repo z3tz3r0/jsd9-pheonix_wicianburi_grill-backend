@@ -21,8 +21,9 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const whitelist = [
-  "http://localhost:5173",
+  // "http://localhost:5173",
   "https://jsd9-pheonix-wicianburi-frontend.vercel.app",
+  "allrice-inc-project-frontend-z3tz3r0s-projects.vercel.app",
 ];
 const corsOptions = {
   origin: function (origin, callback) {

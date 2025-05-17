@@ -68,7 +68,7 @@ export const loginUser = async (req, res, next) => {
 
 export const logoutUser = (req, res) => {
   const isProd = process.env.NODE_ENV === "production";
-  console.log("Logged out!");
+  // console.log("Logged out!");
   res.clearCookie("accessToken", {
     httpOnly: true,
     secure: isProd,
